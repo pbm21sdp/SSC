@@ -1,0 +1,76 @@
+using System;
+using System.IO;
+using System.Security.Cryptography;
+using System.Text;
+
+class HashDemonstrator
+{
+    static string ComputeSHA256(string filePath)
+    {
+        using (SHA256 sha256 = SHA256.Create())
+        using (FileStream stream = File.OpenRead(filePath))
+        {
+            byte[] hash = sha256.ComputeHash(stream);
+            return BitConverter.ToString(hash).Replace("-", "").ToLower();
+        }
+    }
+
+    static string ComputeHMACSHA256(string filePath, byte[] key)
+    {
+        using (HMACSHA256 hmac = new HMACSHA256(key))
+        using (FileStream stream = File.OpenRead(filePath))
+        {
+            byte[] hash = hmac.ComputeHash(stream);
+            return BitConverter.ToString(hash).Replace("-", "").ToLower();
+        }
+    }
+
+    static void ModifyFile(string filePath)
+    {
+        using (FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite))
+        {
+            if (stream.Length == 0)
+                throw new InvalidOperationException("Fișierul este gol");
+
+            // Schimbă primul byte
+            stream.Position = 0;
+            byte originalByte = (byte)stream.ReadByte();
+            stream.Position = 0;
+            stream.WriteByte((byte)(originalByte + 1));
+        }
+    }
+
+    static void Main(string[] args)
+    {
+        const string filePath = "fisier_test.bin";
+        byte[] hmacKey;
+
+        // Generează cheie HMAC
+        using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
+        {
+            hmacKey = new byte[64];
+            rng.GetBytes(hmacKey);
+        }
+
+        try
+        {
+            // Hash original
+            Console.WriteLine("Hash original:");
+            Console.WriteLine($"SHA-256:    {ComputeSHA256(filePath)}");
+            Console.WriteLine($"HMAC-SHA256: {ComputeHMACSHA256(filePath, hmacKey)}");
+            
+            // Modifică fișier
+            ModifyFile(filePath);
+            Console.WriteLine("\nFișier modificat...\n");
+
+            // Hash după modificare
+            Console.WriteLine("Hash după modificare:");
+            Console.WriteLine($"SHA-256:    {ComputeSHA256(filePath)}");
+            Console.WriteLine($"HMAC-SHA256: {ComputeHMACSHA256(filePath, hmacKey)}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Eroare: {ex.Message}");
+        }
+    }
+}
