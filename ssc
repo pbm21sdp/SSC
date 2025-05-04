@@ -32,7 +32,6 @@ class HashDemonstrator
             if (stream.Length == 0)
                 throw new InvalidOperationException("Fișierul este gol");
 
-            // Schimbă primul byte
             stream.Position = 0;
             byte originalByte = (byte)stream.ReadByte();
             stream.Position = 0;
@@ -45,7 +44,6 @@ class HashDemonstrator
         const string filePath = "fisier_test.bin";
         byte[] hmacKey;
 
-        // Generează cheie HMAC
         using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
         {
             hmacKey = new byte[64];
@@ -54,17 +52,14 @@ class HashDemonstrator
 
         try
         {
-            // Hash original
             Console.WriteLine("Hash original:");
             Console.WriteLine($"SHA-256:    {ComputeSHA256(filePath)}");
             Console.WriteLine($"HMAC-SHA256: {ComputeHMACSHA256(filePath, hmacKey)}");
             
-            // Modifică fișier
             ModifyFile(filePath);
-            Console.WriteLine("\nFișier modificat...\n");
+            Console.WriteLine("\nFisier modificat...\n");
 
-            // Hash după modificare
-            Console.WriteLine("Hash după modificare:");
+            Console.WriteLine("Hash dupa modificare:");
             Console.WriteLine($"SHA-256:    {ComputeSHA256(filePath)}");
             Console.WriteLine($"HMAC-SHA256: {ComputeHMACSHA256(filePath, hmacKey)}");
         }
